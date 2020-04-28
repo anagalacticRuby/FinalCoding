@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,29 +16,47 @@ public class FileMapper {
   private LinkedHashMap<HashSet<String>, Integer> sortedGrams;
   private final Map<String, Integer> wordCount = new HashMap<>();
   private int totalCount;
-  private List<String[]> wordResults = new ArrayList<>();
+  public String nextWord;
 
-  public boolean checkSet(String predicate) {
+  /**
+   * Checks to see if the word input to console exists in a set.
+   *
+   * <p>Then, it will give you the next possible word if there exists one. Otherwise it outputs
+   * connector words
+   *
+   * @param predicate the word input by the user
+   * @return the next word based on math
+   */
+  public void checkSet(String predicate) {
 
     if (sortedGrams.entrySet().toString().contains(predicate)) {
-      /*  for (HashSet<String> wordSet : sortedGrams.keySet()) {
-        List<Set<String>> wordList = wordSet.stream().collect(Collectors.toSet());
-        double confidence = (double) sortedGrams.get(wordList.get(0)) / sortedGrams.get(wordSet);
-      }*/
+      // Take our map of sorted bigrams and filter to only the ones we care about
+      Map<HashSet<String>, Integer> resultMap =
+          sortedGrams.entrySet().stream()
+              .filter(
+                  map ->
+                      map.getKey().toString().contains("[" + predicate + ",")
+                          || map.getKey().toString().contains(predicate + "]"))
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      // count up how many times that word appears in all those relevant pairs
+      int validTotal = resultMap.values().stream().reduce(0, Integer::sum);
 
-      for(String[] words: wordResults){
-        for(int conclusion = 0; conclusion < totalCount; conclusion++){
-          if(words[conclusion] == ){
+      for (HashSet<String> wordSet : resultMap.keySet()) {
+        List<String> wordList = wordSet.stream().collect(Collectors.toList());
+        // Calculate the support
+        double support = (double) resultMap.get(wordSet) / validTotal;
+        support *= 100;
 
-          }
+        // Used for debugging / data validation
+        // System.out.printf("%.3f%n", support);
+        if (support > 60) {
+          List<String> collect =
+              wordSet.stream().filter(cut -> !cut.matches(predicate)).collect(Collectors.toList());
+          System.out.println(collect.toString());
+          nextWord = collect.toString();
         }
-System.out.println("hi");
       }
-      System.out.println(sortedGrams.entrySet());
-
-      return true;
     }
-    return false;
   }
 
   /**
@@ -76,22 +95,21 @@ System.out.println("hi");
             .collect(Collectors.toList());
 
     // System.out.println(textWords);
-    wordResults = (List<String[]>) textWords;
+
     // Count individual occurrences of every word
     for (int i = 1; i < textWords.size(); i++) {
       wordCount.merge((textWords.get(i)), 1, Integer::sum);
-      //Total count of all words
+      // Total count of all words
       totalCount = wordCount.values().stream().reduce(0, Integer::sum);
     }
     // System.out.println(wordCount);
-    //System.out.println(totalCount);
+    // System.out.println(totalCount);
 
     // Create bgrams of word pairs
     createBgram(textWords);
     // Sort bgrams by value (highest to lowest)
     sortBgram();
   }
-
 
   /** Sort the bgram by value (highest first) using a stream. */
   private void sortBgram() {
@@ -109,9 +127,6 @@ System.out.println("hi");
    * @param textWords The list of words retrieved from the file
    */
   private void createBgram(List<String> textWords) {
-    /*    String[] allTokens = currentLine.trim().split("\\s+");
-    for (String token : allTokens) {
-      allWordsByKey.merge(token, 1, Integer::sum);*/
     for (int i = 1; i < textWords.size(); i++) {
       bgrams.merge(
           new HashSet<>(Arrays.asList(textWords.get(i - 1), textWords.get(i))), 1, Integer::sum);

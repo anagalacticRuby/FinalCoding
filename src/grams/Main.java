@@ -23,12 +23,11 @@ public class Main {
 
     FileMapper textR = new FileMapper("src/messages.txt");
 
-    Boolean pop = textR.checkSet(yourInput);
-    System.out.println(pop);
-    textR.printPairsByValue();
-    // Read File to create BiGram
+    textR.checkSet(yourInput);
+
+    //textR.printPairsByValue();
 
     // Print result 1
-    System.out.println("Your next word will be + " + "\n");
+    System.out.println("Your next word will be + " + textR.nextWord + "\n");
   }
 }
