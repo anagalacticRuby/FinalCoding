@@ -15,7 +15,7 @@ public class Main {
     // Create scanner for input
     Scanner myScanner = new Scanner(System.in);
     // Ask user for input
-    System.out.println("Please type 1 word:");
+    System.out.println("Please type 1 word, and I'll try to predict what three words you might say next: (Case sensitive)");
     // Store user input (only 1 word wanted, so we can't use nextLine)
     String yourInput = myScanner.next();
     // Close scanner when done
@@ -25,9 +25,12 @@ public class Main {
 
     textR.checkSet(yourInput);
 
-    //textR.printPairsByValue();
+     //textR.printPairsByValue();
 
-    // Print result 1
-    System.out.println("Your next word will be + " + textR.nextWord + "\n");
+    // Print results, one by one
+    for (int i = 0; i < textR.nextWords.size(); i++) {
+      System.out.printf("You next word might be " + "%s.\n", textR.nextWords.get(i));
+    }
+
   }
 }

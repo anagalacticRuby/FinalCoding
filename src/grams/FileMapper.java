@@ -4,8 +4,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,7 +22,7 @@ public class FileMapper {
   private LinkedHashMap<HashSet<String>, Integer> sortedGrams;
   private final Map<String, Integer> wordCount = new HashMap<>();
   private int totalCount;
-  public String nextWord;
+  public ArrayList<String> nextWords = new ArrayList<>();
 
   /**
    * Checks to see if the word input to console exists in a set.
@@ -25,11 +31,13 @@ public class FileMapper {
    * connector words
    *
    * @param predicate the word input by the user
-   * @return the next word based on math
    */
   public void checkSet(String predicate) {
-
-    if (sortedGrams.entrySet().toString().contains(predicate)) {
+    if (!sortedGrams.entrySet().toString().contains(predicate)) {
+      nextWords.add("the");
+      nextWords.add("this");
+      nextWords.add("of");
+    } else {
       // Take our map of sorted bigrams and filter to only the ones we care about
       Map<HashSet<String>, Integer> resultMap =
           sortedGrams.entrySet().stream()
@@ -42,8 +50,7 @@ public class FileMapper {
       int validTotal = resultMap.values().stream().reduce(0, Integer::sum);
 
       for (HashSet<String> wordSet : resultMap.keySet()) {
-        List<String> wordList = wordSet.stream().collect(Collectors.toList());
-        // Calculate the support
+        // Calculate the support for each valid word pair
         double support = (double) resultMap.get(wordSet) / validTotal;
         support *= 100;
 
@@ -52,9 +59,17 @@ public class FileMapper {
         if (support > 60) {
           List<String> collect =
               wordSet.stream().filter(cut -> !cut.matches(predicate)).collect(Collectors.toList());
-          System.out.println(collect.toString());
-          nextWord = collect.toString();
+          // If a word has a support over 60%, add it to the list of suggested words
+          nextWords.addAll(collect);
         }
+      }
+      // Adding filler words
+      nextWords.add("the");
+      nextWords.add("this");
+      nextWords.add("of");
+      // Delete any excess suggestions
+      while (nextWords.size() > 3) {
+        nextWords.remove(3);
       }
     }
   }
