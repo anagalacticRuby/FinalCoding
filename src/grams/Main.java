@@ -15,22 +15,25 @@ public class Main {
     // Create scanner for input
     Scanner myScanner = new Scanner(System.in);
     // Ask user for input
-    System.out.println("Please type 1 word, and I'll try to predict what three words you might say next: (Case sensitive)");
+    System.out.println(
+        "Please type 1 word, and "
+            + "I'll try to predict what three words you might say next: (Case sensitive)");
     // Store user input (only 1 word wanted, so we can't use nextLine)
     String yourInput = myScanner.next();
     // Close scanner when done
     myScanner.close();
 
-    FileMapper textR = new FileMapper("src/messages.txt");
-
-    textR.checkSet(yourInput);
-
-     //textR.printPairsByValue();
+    // First load the file, and make a list of words contained.
+    TextReader textR = new TextReader("src/messages.txt");
+    // Next, pass the created list into the Predictor class to perform analytics.
+    Predictor mystic = new Predictor(textR.textWords);
+    // After the mystic has prepared her mind with word pairs, she reads your mind.
+    // She calls upon the createPrediction method to generate word suggestions
+    mystic.createPrediction(yourInput);
 
     // Print results, one by one
-    for (int i = 0; i < textR.nextWords.size(); i++) {
-      System.out.printf("You next word might be " + "%s.\n", textR.nextWords.get(i));
+    for (int i = 0; i < mystic.wordPredicts.size(); i++) {
+      System.out.printf("You next word might be " + "%s.\n", mystic.wordPredicts.get(i));
     }
-
   }
 }
